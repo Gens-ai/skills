@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# Tear down local dev services so nothing holds onto a port. Safe to run anytime.
+# Stops all running Docker containers, kills Vite dev servers, and stops any
+# system services you list below. Put this on your PATH (e.g. ~/.local/bin/stop-dev)
+# or run it from the skill: `bash scripts/stop-dev`.
+set -euo pipefail
+
+# --- CONFIG: local system services to stop (uncomment/add the ones you run) ---
+# Stopped via `sudo systemctl stop` — needs passwordless sudo for these to work
+# non-interactively. Leave empty if you run everything in Docker.
+SERVICES=(
+  # mysqld
+  # mariadb
+  # postgresql
+  # valkey
+  # redis-server
+)
+
+stopped_containers=0; stopped_vite=0; stopped_services=()
+
+# Stop all running Docker containers (aggressive on purpose: a dev box's containers
+# are dev services. Comment this out if you run non-dev containers locally.)
+if docker info &>/dev/null; then
+  running="$(docker ps -q)"
+  if [[ -n "$running" ]]; then
+    stopped_containers="$(echo "$running" | wc -l)"
+    docker stop $running &>/dev/null
+  fi
+fi
+
+# Kill Vite dev servers so they release 5173+
+vite_pids="$(pgrep -f 'node .*vite' || true)"
+if [[ -n "$vite_pids" ]]; then
+  stopped_vite="$(echo "$vite_pids" | wc -l)"
+  kill $vite_pids &>/dev/null || true
+fi
+
+# Stop configured system services
+if [[ ${#SERVICES[@]} -gt 0 ]]; then
+  for service in "${SERVICES[@]}"; do
+    if systemctl is-active --quiet "$service" 2>/dev/null; then
+      sudo systemctl stop "$service" && stopped_services+=("$service")
+    fi
+  done
+fi
+
+# Report
+[[ $stopped_containers -gt 0 ]] && echo "Stopped $stopped_containers Docker container(s)"
+[[ ${#stopped_services[@]} -gt 0 ]] && echo "Stopped system service(s): ${stopped_services[*]}"
+[[ $stopped_vite -gt 0 ]] && echo "Stopped $stopped_vite Vite process(es)"
+[[ $stopped_containers -eq 0 && ${#stopped_services[@]} -eq 0 && $stopped_vite -eq 0 ]] && echo "Nothing was running"
+exit 0

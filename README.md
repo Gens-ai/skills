@@ -17,6 +17,15 @@ It bakes in the gotchas that cost real time — especially the rclone + write-on
 
 > Scope: written for Debian-family systems (apt, systemd, ufw). The tools are cross-distro; the scripts assume Debian/Ubuntu.
 
+### [`dev-servers`](./dev-servers)
+Start or stop local dev servers the safe way. The value is the **lifecycle discipline**, not a magic start command:
+
+- **Defer to a project skill** — if the repo ships its own `local-servers` skill, that wins.
+- **Tear down first** — a bundled `stop-dev` frees ports (stops Docker containers, kills Vite, stops configured system services) before starting, killing the usual "port already in use" pain.
+- **Detect the stack** — Laravel Sail, Laravel, Node/npm, or Makefile — then start it and report ports.
+
+Self-contained (no external dependencies). See [its SKILL.md](./dev-servers/SKILL.md).
+
 ## License
 
 [MIT](./LICENSE) © 2026 Joe Kneeland
