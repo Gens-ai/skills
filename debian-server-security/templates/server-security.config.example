@@ -1,0 +1,13 @@
+# /etc/server-security/config  —  per-server. chmod 600, owned by root. NEVER commit this.
+# Copy to /etc/server-security/config and fill in. Sourced by b2-backup.sh, b2-ship-logs.sh,
+# install-netdata.sh.
+
+# --- Pushover (out-of-band alerting). One app token + your user key, reusable across all servers. ---
+PUSHOVER_TOKEN="your-pushover-app-token"
+PUSHOVER_USER="your-pushover-user-key"
+
+# --- Backblaze B2 destination ---
+# 'b2' is the rclone remote written by setup-b2-rclone.sh (which holds the WRITE-ONLY key).
+B2_BUCKET="b2:your-bucket-name"
+# Per-server prefix inside the bucket, so multiple servers can share one bucket. Defaults to hostname.
+B2_PREFIX="$(hostname -s)"

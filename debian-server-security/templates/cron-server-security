@@ -1,0 +1,8 @@
+# /etc/cron.d/server-security  —  B2 backup + log shipping. Times in UTC.
+# Install: cp templates/cron-server-security /etc/cron.d/server-security && chmod 644 /etc/cron.d/server-security && systemctl restart cron
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# Nightly full backup (DBs + .env + uploads) at 02:30 UTC
+30 2 * * * root /usr/local/sbin/b2-backup.sh >> /var/log/b2-backup.log 2>&1
+# Hourly security/access log snapshot at :17
+17 * * * * root /usr/local/sbin/b2-ship-logs.sh >> /var/log/b2-ship-logs.log 2>&1
