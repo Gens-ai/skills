@@ -39,11 +39,27 @@ created: YYYY-MM-DD
 ## Details
 
 <area affected, repro steps, relevant files — whatever's known>
+
+## Findings
+
+<learnings/discoveries from investigation, appended as dated entries as they emerge>
 ```
 
-Keep it terse — match the level of detail in the summary/details fields to what's actually known; don't pad with boilerplate sections that have nothing in them.
+Keep it terse — match the level of detail in the summary/details/findings fields to what's actually known; don't pad with boilerplate sections that have nothing in them. Omit the `## Findings` section entirely if there's nothing to put in it yet — add it later when the first finding comes in.
+
+**Status values:** `open` → `in-progress` → `resolved`, or `wontfix` for anything closed without a fix. Set `in-progress` once active investigation starts (not just on file creation).
+
+## Recording findings during investigation
+
+While researching an issue, when you reach a conclusion (root cause identified, a dead end ruled out, a workaround discovered), don't update the doc silently — ask the user (or at least propose it), e.g. "Should I add this to the issue doc?" Each entry appended to `## Findings` must be dated:
+
+```markdown
+- **YYYY-MM-DD:** <what was learned>
+```
 
 ## Closing / resolving an issue
+
+**Order matters: commit the fix first, then update the ticket.** Follow the user's normal git workflow for the commit itself (this skill doesn't change commit-approval rules — never commit without the user's explicit go-ahead in that turn); once the fix is committed, update the doc referencing that commit.
 
 Don't move or rename the file. Update its frontmatter in place:
 
@@ -52,7 +68,13 @@ status: resolved
 resolved: YYYY-MM-DD
 ```
 
-Add a `## Resolution` section describing the fix — the file(s) it touched and, if the fix was committed, the resolving commit hash. Resolved issues stay in place alongside open ones; never archive or move them elsewhere.
+Add a `## Resolution` section describing the fix — the file(s) it touched and the resolving commit hash (so the fix and the ticket cross-reference each other), dated:
+
+```markdown
+- **YYYY-MM-DD:** <fix description> — commit `<hash>`
+```
+
+Resolved issues stay in place alongside open ones; never archive or move them elsewhere.
 
 ## Checking issue status
 
