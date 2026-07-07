@@ -26,6 +26,15 @@ Start or stop local dev servers the safe way. The value is the **lifecycle disci
 
 Self-contained (no external dependencies). See [its SKILL.md](./dev-servers/SKILL.md).
 
+### [`issue-tracking`](./issue-tracking)
+Track issues as one markdown file each under `docs/issues/`, opened and closed in place:
+
+- **`ISSUE-NNN-slug.md`** — sequential, zero-padded filenames, created on "log an issue" / "create an issue".
+- **Resolved in place** — closing sets `status: resolved` + a `## Resolution` section in the frontmatter; files are never archived or moved elsewhere.
+- **Frontmatter as source of truth** — status queries read `status:` across the directory instead of guessing from filenames.
+
+Self-contained (no external dependencies). See [its SKILL.md](./issue-tracking/SKILL.md).
+
 ## License
 
 [MIT](./LICENSE) © 2026 Joe Kneeland
