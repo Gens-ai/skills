@@ -15,12 +15,19 @@ If `docs/issues/` doesn't exist yet, **ask before creating it** — even if `doc
 
 When the user says "create an issue" (or "log an issue", "add an issue for X"), it means: **add a markdown file to `docs/issues/`.** It does not mean opening a GitHub issue or any other tracker unless they say so explicitly.
 
-**Filename:** `ISSUE-NNN-slug.md`, sequential, zero-padded to 3 digits. Find the next number:
+**Filename:** `ISSUE-NNN-slug.md`, sequential, zero-padded to 3 digits.
+
+**Always check the remote before picking a number.** Other devs may have pushed issues you haven't pulled yet, and numbering only from your local copy is how two people end up with the same number. Fetch first, then take the highest number across your local `docs/issues/` **and** the remote main branch's:
 
 ```bash
-ls docs/issues/ 2>/dev/null | grep -oE '^ISSUE-[0-9]+' | grep -oE '[0-9]+' | sort -n | tail -1
+git fetch origin --quiet
+main=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null || echo origin/main)
+{ ls docs/issues/ 2>/dev/null; git ls-tree --name-only "$main" docs/issues/ 2>/dev/null | xargs -n1 basename 2>/dev/null; } \
+  | grep -oE '^ISSUE-[0-9]+' | grep -oE '[0-9]+' | sort -n | tail -1
 ```
-Increment by 1 (start at 001 if the directory is empty/new).
+Increment by 1 (start at 001 if there are none). If the remote has issues you don't have locally, mention it — the user may want to pull before going further. If the fetch fails (offline, no remote), say so and fall back to the local number rather than guessing silently.
+
+This doesn't catch issues another dev has filed but **not pushed yet** — those can still clash later. When one does, follow "Renumbering an issue" below.
 
 **Template:**
 
@@ -120,6 +127,23 @@ Add a `## Resolution` section describing the fix — the file(s) it touched and 
 ```
 
 Resolved issues stay in place alongside open ones; never archive or move them elsewhere.
+
+## Renumbering an issue
+
+Issue numbers can clash when more than one person (or session) files issues on the same project: each picks "highest local number + 1", so two people with unpushed work can both claim the same number. When that happens, **the number that reached the remote first keeps it**; the unpushed one gets renumbered to the next free number (check both local and the remote, e.g. `git fetch` and look at `origin/<main branch>:docs/issues/` too).
+
+To renumber `ISSUE-OLD` → `ISSUE-NEW`:
+
+1. `git mv` the file to `ISSUE-NEW-<same slug>.md` and change its `id:` frontmatter.
+2. Add a note right under the frontmatter, so anyone reading `git log` can map the old number back:
+
+   ```markdown
+   > Renumbered from ISSUE-OLD on YYYY-MM-DD: that number clashed with an issue filed
+   > on the remote first. Commits made before the renumber say "ISSUE-OLD" but mean this one.
+   ```
+3. Update every reference to it in the working tree (code comments, docs, tests, other issue files) — but only the ones that mean *this* issue. The other issue still owns `ISSUE-OLD`, so a blind find-and-replace is wrong: `git grep -n 'ISSUE-OLD'` and change each hit by hand (or with a sed limited to the files that are yours).
+4. Leave existing commit messages alone — don't rewrite history just to fix a number; the note from step 2 covers them.
+5. Commit the renumber on its own (e.g. `docs: renumber ISSUE-OLD to ISSUE-NEW (number clash with remote)`), following the user's normal commit-approval rules.
 
 ## Checking issue status
 
