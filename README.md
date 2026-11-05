@@ -32,8 +32,29 @@ Track issues as one markdown file each under `docs/issues/`, opened and closed i
 - **`ISSUE-NNN-slug.md`** — sequential, zero-padded filenames, created on "log an issue" / "create an issue".
 - **Resolved in place** — closing sets `status: resolved` + a `## Resolution` section in the frontmatter; files are never archived or moved elsewhere.
 - **Frontmatter as source of truth** — status queries read `status:` across the directory instead of guessing from filenames.
+- **`blocked` and `needs-review` states** — triaged-but-stuck issues carry a `blocked_reason`; fixes awaiting a human check carry a `review_reason` plus concrete `## Verification` steps.
 
 Self-contained (no external dependencies). See [its SKILL.md](./issue-tracking/SKILL.md).
+
+### [`resolve-issue`](./resolve-issue)
+The "do the work" counterpart to `issue-tracking`: pick an issue (by number, description, or oldest open), fix it, close it out.
+
+- **Marks `in-progress` on the primary branch first**, then does the fix in an isolated git worktree (verifying the worktree's base, which Claude Code's `worktree.baseRef` can get wrong).
+- **Multi-repo aware** — respects per-repo working branches documented in the project's CLAUDE.md.
+- **Blocks or parks instead of forcing** — unworkable issues go `blocked`; UI-visible fixes go `needs-review` with test steps that name real records and URLs.
+- **Commit rules** — invoking the skill authorizes only the doc-only status-flip commits; any commit with real code still needs explicit approval. Never pushes.
+
+Requires `issue-tracking`. Uses Claude Code's `EnterWorktree`/`ExitWorktree` tools. See [its SKILL.md](./resolve-issue/SKILL.md).
+
+### [`product-decisions`](./product-decisions)
+One `docs/product-decisions.md` per project: a current-state register of deliberate product/behaviour calls, grouped by domain, pointed to from the project's CLAUDE.md.
+
+- **Record** decisions as they're made in a session (edit in place, mark superseded rules) and **check** the register before changing user-facing behaviour.
+- **`init`** backfills from docs *and* code via parallel research forks; accidental-looking behaviour goes to a "Needs a product call" list, not into the rules.
+- **`review`** — the owner approves every entry, one multiple-choice question at a time, with a recommendation.
+- **`sync`** — re-sweeps the code for drift since the last init.
+
+Uses `issue-tracking` when a review files a fix, and Claude Code's `AskUserQuestion` tool for `review`. See [its SKILL.md](./product-decisions/SKILL.md).
 
 ## License
 
